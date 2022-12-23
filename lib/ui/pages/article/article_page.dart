@@ -20,7 +20,6 @@ class _ArticlePageState extends State<ArticlePage> {
   @override
   void initState() {
     super.initState();
-
     _articleRepository = ArticleRepository();
 
     _articleRepository!.articleStream.listen((articles) {
@@ -46,14 +45,18 @@ class _ArticlePageState extends State<ArticlePage> {
               });
               _articleRepository!.loadMoreArticles();
             }
+            if (_articles.isEmpty) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
           }
           return true;
         },
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          itemCount:
-              _articles.length + (_isLoading && _articles.isEmpty ? 1 : 0),
+          itemCount: _articles.length + (_isLoading ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == _articles.length) {
               return Padding(
