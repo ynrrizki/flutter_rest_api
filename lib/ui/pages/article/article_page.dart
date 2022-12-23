@@ -13,19 +13,45 @@ class ArticlePage extends StatefulWidget {
 class _ArticlePageState extends State<ArticlePage> {
   final ArticleRepository _articleRepository = ArticleRepository();
   final ScrollController scrollController = ScrollController();
-  int limit = 7;
 
-  bool isLoading = false;
-  bool isLoadMore = false;
+  bool hasReachedMax = false;
+
+  void onScroll() {
+    final minScroll = scrollController.position.minScrollExtent;
+    final maxScroll = scrollController.position.maxScrollExtent;
+    final currentScroll = scrollController.position.pixels;
+    if (currentScroll <= 0.9 * minScroll) {
+      // load more
+      _articleRepository.fetchArticle(onScrollMin: true).then(
+        (value) {
+          if (value.isEmpty) {
+            setState(() {
+              hasReachedMax = true;
+            });
+          }
+        },
+      );
+      print('Min Scroll');
+    }
+
+    if (currentScroll >= 0.9 * maxScroll) {
+      // load more
+      _articleRepository.fetchArticle(onScrollMax: true).then(
+        (value) {
+          if (value.isEmpty) {
+            setState(() {
+              hasReachedMax = true;
+            });
+          }
+        },
+      );
+      print('Max Scroll');
+    }
+  }
 
   @override
   void initState() {
-    scrollController.addListener(() {
-      if (scrollController.position.pixels >=
-          0.9 * scrollController.position.maxScrollExtent) {
-        // load more
-      }
-    });
+    scrollController.addListener(onScroll);
     super.initState();
   }
 
@@ -37,6 +63,7 @@ class _ArticlePageState extends State<ArticlePage> {
 
   @override
   Widget build(BuildContext context) {
+    // scrollController.addListener(onScroll);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Article'),
@@ -48,12 +75,31 @@ class _ArticlePageState extends State<ArticlePage> {
               return ListView.builder(
                 physics: const BouncingScrollPhysics(),
                 controller: scrollController,
-                itemCount: snapshot.data!.length,
+                itemCount: (hasReachedMax)
+                    ? snapshot.data!.length
+                    : snapshot.data!.length + 1,
                 padding: const EdgeInsets.all(10),
                 itemBuilder: (context, index) {
-                  return ArticleCard(
-                    article: snapshot.data![index],
-                  );
+                  if (index < snapshot.data!.length) {
+                    return ArticleCard(
+                      article: snapshot.data![index],
+                    );
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 25),
+                      child: Center(
+                        child: Column(
+                          children: const [
+                            Divider(
+                              thickness: 2,
+                              height: 5,
+                            ),
+                            CircularProgressIndicator(),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
                 },
               );
             } else {

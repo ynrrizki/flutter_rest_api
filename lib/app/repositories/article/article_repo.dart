@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter_laravel_rest_api/app/models/article/article.dart';
 import 'package:http/http.dart' as http;
@@ -15,46 +16,37 @@ class ArticleRepository implements Repository {
   // Index data yang ditampilkan
   int _startIndex = 0;
 
+  @override
   Stream<List<Article>> get articleStream {
     StreamController<List<Article>> controller = StreamController();
-    Timer.periodic(const Duration(seconds: 10), (timer) async {
-      List<Article> articles = await _fetchArticle();
-      controller.sink.add(articles);
+    Timer.periodic(const Duration(milliseconds: 900), (timer) {
+      fetchArticle().then((value) {
+        if (value.isEmpty) controller.sink.add(value);
+      });
     });
     return controller.stream;
   }
 
-  Future<List<Article>> _fetchArticle() async {
+  @override
+  Future<List<Article>> fetchArticle({
+    bool onScrollMax = false,
+    bool onScrollMin = false,
+  }) async {
     final response =
         await http.get(Uri.parse('$_apiUrl?start=$_startIndex&limit=$_limit'));
-
     if (response.statusCode == 200) {
       List articleData = json.decode(response.body);
-      // _startIndex += _limit;
-      return articleData.map((article) => Article.fromJson(article)).toList();
-    } else {
-      throw Exception('Failed to load article');
-    }
-  }
-
-  static Stream<List<Article>> getData({int limit = 14}) async* {
-    List<Article> articles = [];
-    try {
-      final response = await http.get(
-        Uri.parse('https://isoc.co.id/api/articles/posts?start=0&limit=5'),
-      );
-      if (response.statusCode == 200) {
-        String body = response.body;
-
-        List json = jsonDecode(body);
-
-        for (var data in json) {
-          articles.add(Article.fromJson(data));
+      if (onScrollMax) {
+        _startIndex += _limit;
+      } else if (onScrollMin) {
+        if (_startIndex != 0) {
+          _startIndex -= _limit;
         }
       }
-    } catch (e) {
-      e.toString();
+      return articleData.map((article) => Article.fromJson(article)).toList();
+    } else {
+      log('gagal request cuk ${response.statusCode}');
+      throw Exception('Failed to load article');
     }
-    yield articles;
   }
 }

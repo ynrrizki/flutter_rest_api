@@ -50,7 +50,7 @@ class _TestPageState extends State<TestPage> {
 
   Widget _buildLoader() {
     return _isLoading
-        ? Center(
+        ? const Center(
             child: CircularProgressIndicator(),
           )
         : Container();
@@ -81,9 +81,9 @@ class _TestPageState extends State<TestPage> {
 class MyRepository {
   Future<List<int>> getMoreData() async {
     // Simulate network delay
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
 
     // Return some fake data
-    return List.generate(100, (i) => i + 1);
+    return List.generate(50, (i) => i + 1);
   }
 }

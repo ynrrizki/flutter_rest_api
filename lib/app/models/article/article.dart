@@ -33,16 +33,16 @@ class Article {
   }
 
   Map<String, dynamic> toJson() {
-    final _data = <String, dynamic>{};
-    _data['id'] = id;
-    _data['category_id'] = categoryId;
-    _data['title'] = title;
-    _data['author'] = author;
-    _data['featured_image'] = featuredImage;
-    _data['featured_name'] = featuredName;
-    _data['content'] = content;
-    _data['created_at'] = createdAt;
-    _data['updated_at'] = updatedAt;
-    return _data;
+    final data = <String, dynamic>{};
+    data['id'] = id;
+    data['category_id'] = categoryId;
+    data['title'] = title;
+    data['author'] = author;
+    data['featured_image'] = featuredImage;
+    data['featured_name'] = featuredName;
+    data['content'] = content;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    return data;
   }
 }

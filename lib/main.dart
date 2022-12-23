@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_laravel_rest_api/ui/pages/article/test_page.dart';
+// import 'package:flutter_laravel_rest_api/ui/pages/article/test_page.dart';
 import 'package:flutter_laravel_rest_api/ui/pages/menu_page.dart';
 
 void main() {
@@ -14,7 +14,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: TestPage(),
+      home: const MenuPage(),
     );
   }
 }
