@@ -52,7 +52,8 @@ class _ArticlePageState extends State<ArticlePage> {
         child: ListView.builder(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          itemCount: _articles.length + (_isLoading ? 1 : 0),
+          itemCount:
+              _articles.length + (_isLoading && _articles.isEmpty ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == _articles.length) {
               return Padding(
