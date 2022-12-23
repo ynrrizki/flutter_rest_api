@@ -11,107 +11,69 @@ class ArticlePage extends StatefulWidget {
 }
 
 class _ArticlePageState extends State<ArticlePage> {
-  final ArticleRepository _articleRepository = ArticleRepository();
-  final ScrollController scrollController = ScrollController();
+  ArticleRepository? _articleRepository;
 
-  bool hasReachedMax = false;
+  bool _isLoading = false;
 
-  void onScroll() {
-    final minScroll = scrollController.position.minScrollExtent;
-    final maxScroll = scrollController.position.maxScrollExtent;
-    final currentScroll = scrollController.position.pixels;
-    if (currentScroll <= 0.9 * minScroll) {
-      // load more back
-      _articleRepository.fetchArticle(onScrollMin: true).then(
-        (value) {
-          if (value.isEmpty) {
-            setState(() {
-              hasReachedMax = true;
-            });
-          }
-        },
-      );
-      print('Min Scroll');
-    }
-
-    if (currentScroll >= 0.9 * maxScroll) {
-      // load more
-      _articleRepository.fetchArticle(onScrollMax: true).then(
-        (value) {
-          if (value.isEmpty) {
-            setState(() {
-              hasReachedMax = true;
-            });
-          }
-        },
-      );
-      print('Max Scroll');
-    }
-  }
+  List<Article> _articles = [];
 
   @override
   void initState() {
-    scrollController.addListener(onScroll);
     super.initState();
-  }
 
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
+    _articleRepository = ArticleRepository();
+
+    _articleRepository!.articleStream.listen((articles) {
+      setState(() {
+        _articles = articles;
+        _isLoading = false;
+      });
+    });
+
+    _articleRepository!.loadMoreArticles();
   }
 
   @override
   Widget build(BuildContext context) {
-    // scrollController.addListener(onScroll);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Article'),
-      ),
-      body: StreamBuilder<List<Article>>(
-        stream: _articleRepository.articleStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              controller: scrollController,
-              itemCount: (hasReachedMax)
-                  ? snapshot.data!.length
-                  : snapshot.data!.length + 1,
-              padding: const EdgeInsets.all(10),
-              itemBuilder: (context, index) {
-                if (index < snapshot.data!.length) {
-                  return ArticleCard(
-                    article: snapshot.data![index],
-                  );
-                } else {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 25),
-                    child: Center(
-                      child: Column(
-                        children: const [
-                          Divider(
-                            thickness: 2,
-                            height: 5,
-                          ),
-                          CircularProgressIndicator(),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-              },
-            );
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else {
-            return const Center(
-              child: Text('Failed load data'),
-            );
+      appBar: AppBar(title: const Text('Article')),
+      body: NotificationListener(
+        onNotification: (notification) {
+          if (notification is ScrollEndNotification) {
+            if (!_isLoading) {
+              setState(() {
+                _isLoading = true;
+              });
+              _articleRepository!.loadMoreArticles();
+            }
           }
+          return true;
         },
+        child: ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          itemCount: _articles.length + (_isLoading ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == _articles.length) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 25),
+                child: Center(
+                  child: Column(
+                    children: const [
+                      Divider(
+                        thickness: 2,
+                        height: 20,
+                      ),
+                      SizedBox(height: 5),
+                      CircularProgressIndicator(),
+                    ],
+                  ),
+                ),
+              );
+            }
+            return ArticleCard(article: _articles[index]);
+          },
+        ),
       ),
     );
   }
