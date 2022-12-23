@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_laravel_rest_api/app/models/article/article.dart';
-import 'package:flutter_laravel_rest_api/app/repositories/article/article_repo.dart';
+import 'package:flutter_laravel_rest_api/app/repositories/repositories.dart';
 import 'package:flutter_laravel_rest_api/ui/widgets/article_card.dart';
 
 class ArticlePage extends StatefulWidget {
