@@ -16,6 +16,10 @@ class ArticleRepository implements Repository {
 
   final StreamController<List<Article>> _articleController = StreamController();
 
+  bool isEmpty = false;
+
+  bool isNotEmpty = false;
+
   @override
   Stream<List<Article>> get articleStream => _articleController.stream;
 
@@ -43,6 +47,10 @@ class ArticleRepository implements Repository {
       if (value.isNotEmpty) {
         _articles.addAll(value);
         _articleController.sink.add(_articles);
+        isNotEmpty = value.isNotEmpty;
+      }
+      if (value.isEmpty) {
+        isEmpty = value.isEmpty;
       }
     });
   }

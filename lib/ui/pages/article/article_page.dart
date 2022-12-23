@@ -39,16 +39,17 @@ class _ArticlePageState extends State<ArticlePage> {
       body: NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollEndNotification) {
-            if (!_isLoading) {
-              setState(() {
-                _isLoading = true;
-              });
-              _articleRepository!.loadMoreArticles();
-            }
-            if (_articles.isEmpty) {
+            if (_articleRepository!.isEmpty) {
               setState(() {
                 _isLoading = false;
               });
+            } else {
+              if (!_isLoading) {
+                setState(() {
+                  _isLoading = true;
+                });
+                _articleRepository!.loadMoreArticles();
+              }
             }
           }
           return true;
