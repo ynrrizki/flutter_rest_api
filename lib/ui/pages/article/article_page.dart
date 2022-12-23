@@ -21,7 +21,7 @@ class _ArticlePageState extends State<ArticlePage> {
     final maxScroll = scrollController.position.maxScrollExtent;
     final currentScroll = scrollController.position.pixels;
     if (currentScroll <= 0.9 * minScroll) {
-      // load more
+      // load more back
       _articleRepository.fetchArticle(onScrollMin: true).then(
         (value) {
           if (value.isEmpty) {
@@ -69,45 +69,50 @@ class _ArticlePageState extends State<ArticlePage> {
         title: const Text('Article'),
       ),
       body: StreamBuilder<List<Article>>(
-          stream: _articleRepository.articleStream,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                controller: scrollController,
-                itemCount: (hasReachedMax)
-                    ? snapshot.data!.length
-                    : snapshot.data!.length + 1,
-                padding: const EdgeInsets.all(10),
-                itemBuilder: (context, index) {
-                  if (index < snapshot.data!.length) {
-                    return ArticleCard(
-                      article: snapshot.data![index],
-                    );
-                  } else {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 25),
-                      child: Center(
-                        child: Column(
-                          children: const [
-                            Divider(
-                              thickness: 2,
-                              height: 5,
-                            ),
-                            CircularProgressIndicator(),
-                          ],
-                        ),
+        stream: _articleRepository.articleStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              physics: const BouncingScrollPhysics(),
+              controller: scrollController,
+              itemCount: (hasReachedMax)
+                  ? snapshot.data!.length
+                  : snapshot.data!.length + 1,
+              padding: const EdgeInsets.all(10),
+              itemBuilder: (context, index) {
+                if (index < snapshot.data!.length) {
+                  return ArticleCard(
+                    article: snapshot.data![index],
+                  );
+                } else {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 25),
+                    child: Center(
+                      child: Column(
+                        children: const [
+                          Divider(
+                            thickness: 2,
+                            height: 5,
+                          ),
+                          CircularProgressIndicator(),
+                        ],
                       ),
-                    );
-                  }
-                },
-              );
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          }),
+                    ),
+                  );
+                }
+              },
+            );
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return const Center(
+              child: Text('Failed load data'),
+            );
+          }
+        },
+      ),
     );
   }
 }

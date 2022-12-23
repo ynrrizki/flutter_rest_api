@@ -21,7 +21,7 @@ class ArticleRepository implements Repository {
     StreamController<List<Article>> controller = StreamController();
     Timer.periodic(const Duration(milliseconds: 900), (timer) {
       fetchArticle().then((value) {
-        if (value.isEmpty) controller.sink.add(value);
+        if (value.isNotEmpty) controller.sink.add(value);
       });
     });
     return controller.stream;
@@ -43,6 +43,20 @@ class ArticleRepository implements Repository {
           _startIndex -= _limit;
         }
       }
+      return articleData.map((article) => Article.fromJson(article)).toList();
+    } else {
+      log('gagal request cuk ${response.statusCode}');
+      throw Exception('Failed to load article');
+    }
+  }
+
+  // =============================================
+  // == TEST
+  // =============================================
+  Future<List<Article>> fetchArticle2() async {
+    final response = await http.get(Uri.parse(_apiUrl));
+    if (response.statusCode == 200) {
+      List articleData = json.decode(response.body);
       return articleData.map((article) => Article.fromJson(article)).toList();
     } else {
       log('gagal request cuk ${response.statusCode}');
